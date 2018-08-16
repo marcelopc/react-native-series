@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, Button, StyleSheet, TextInput, View } from "react-native";
 import firebase from 'firebase';
 
 import FormRow from '../utils/FormRow'
@@ -11,6 +11,7 @@ export default class LoginPage extends React.Component {
         this.state = {
             mail: '',
             password: '',
+            isLoading: false
         }
     }
     componentDidMount(){
@@ -29,12 +30,27 @@ export default class LoginPage extends React.Component {
         this.setState({ [field]: value });
     }
     tryLogin(){
+        this.setState({isLoading: true});
         const { mail, password} = this.state;
+
         firebase
         .auth()
         .signInWithEmailAndPassword(mail, password)
         .then( user => console.log('Usuário autenticado!', user) )
-        .catch( error => console.log('Usuário não encontrado', error) );
+        .catch( error => console.log('Usuário não encontrado', error) )
+        .then( () => this.setState({isLoading: false}) )
+    }
+
+    renderButton() {
+        if(this.state.isLoading)
+            return <ActivityIndicator/>;
+
+        return (
+            <Button
+                title='Entrar'
+                onPress={() => this.tryLogin()}
+            />
+        );
     }
 
     render() {
@@ -57,10 +73,7 @@ export default class LoginPage extends React.Component {
                     onChangeText={ value => this.onChangeHandler('password', value) }
                 />
             </FormRow>
-            <Button
-                title='Entrar'
-                onPress={() => this.tryLogin()}
-            />
+            { this.renderButton() }
           </View>
       )
     };
